@@ -1,0 +1,67 @@
+@tailwind base;
+
+@tailwind components;
+
+@tailwind utilities;
+
+@layer components {
+  .input_style_1 {
+    @apply mt-1
+    bg-gray-50
+    border border-gray-300
+    text-gray-900 text-sm
+    rounded-lg
+    focus:outline-none
+    focus:ring-green-500
+    focus:border-green-500
+    focus:ring-1
+    block
+    w-full
+    p-2.5
+    transition
+    duration-300;
+  }
+  .btn_dark {
+    @apply py-2
+    px-4
+    rounded
+    bg-gray-700
+    text-white
+    justify-end
+    hover:bg-gray-500
+    duration-300;
+  }
+  .btn_upload {
+    @apply absolute
+    block
+    text-xs
+    tracking-widest
+    p-2
+    rounded
+    border border-gray-300
+    hover:bg-gray-700 hover:text-white
+    transition
+    duration-300
+    top-0
+    w-32;
+  }
+  .btn_accept_upload {
+    @apply p-2
+    w-32
+    block
+    bg-gray-700
+    rounded
+    text-xs text-white
+    hover:bg-gray-500
+    duration-300;
+  }
+  .btn_file_upload {
+    @apply relative
+    opacity-0
+    block
+    border-gray-300
+    transition
+    duration-300
+    z-10;
+  }
+}
