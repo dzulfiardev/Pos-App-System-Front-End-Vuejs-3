@@ -8,7 +8,6 @@
 
 <script>
 import DashboardLayout from "./Layout/DashboardLayout.vue";
-// import { reactive } from "vue";
 import * as API from "@/services/API";
 
 export default {
@@ -23,15 +22,6 @@ export default {
       } catch (err) {
         console.log(err);
       }
-
-      // API.apiClient
-      //   .get("/products-by-company")
-      //   .then((res) => {
-      //     console.log(res.data.data);
-      //   })
-      //   .catch((err) => {
-      //     console.log(err.response);
-      //   });
     }
     getProducts();
   },

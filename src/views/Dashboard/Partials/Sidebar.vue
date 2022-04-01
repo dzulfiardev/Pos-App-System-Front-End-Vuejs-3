@@ -12,7 +12,7 @@
             />
           </div>
           <div class="w-3/4">
-            <p class="text-xl text-gray-100 sm:text-md">My App Name</p>
+            <p class="text-xl text-gray-100 sm:text-md">{{ companyName }}</p>
           </div>
         </div>
       </router-link>
@@ -29,6 +29,9 @@
 import SidebarMenus from "./SidebarMenus.vue";
 
 export default {
+  props: {
+    companyName: String,
+  },
   components: {
     SidebarMenus,
   },

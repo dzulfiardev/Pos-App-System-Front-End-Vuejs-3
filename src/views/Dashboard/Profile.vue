@@ -34,7 +34,7 @@
               />
               <span
                 v-else
-                class="w-20 h-20 rounded-full bg-gray-300 block"
+                class="w-32 h-32 rounded-full bg-gray-300 block"
               ></span>
             </div>
             <div class="mt-4">
@@ -224,6 +224,7 @@ export default {
       };
       AuthService.updateUser(payload)
         .then(() => {
+          store.dispatch("auth/getAuthUser");
           disable.submitProfile = false;
           alert.success = "User Updated";
           setTimeout(() => {

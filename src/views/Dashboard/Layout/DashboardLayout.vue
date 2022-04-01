@@ -5,6 +5,7 @@
       <Sidebar
         v-if="sidebar.open"
         class="hidden sm:hidden md:hidden xl:block w-1/5 z-0"
+        :companyName="authUser.company"
       />
     </transition>
     <DrawerSidebar
@@ -13,6 +14,7 @@
     />
     <div class="min-h-full h-fit w-full sm:w-full md:w-full">
       <Topbar
+        :photo="photo"
         @logout="handleLogout"
         @toggleSidebar="toggleSidebar"
         @toggleSlide="toggleSlide"
@@ -62,6 +64,16 @@ export default {
       slideClass: "hideSlideSidebar",
     });
 
+    const photo = reactive({
+      avatar: null,
+      avatarSrc: null,
+    });
+
+    async function getAuthData() {
+      await store.dispatch("auth/getAuthUser");
+    }
+    getAuthData();
+
     function toggleSidebar() {
       sidebar.open = !sidebar.open;
       // if (sidebar.open) {
@@ -86,6 +98,7 @@ export default {
     }
 
     return {
+      photo,
       store,
       sidebar,
       form,

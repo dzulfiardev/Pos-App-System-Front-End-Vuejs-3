@@ -45,7 +45,6 @@ export const actions = {
 
     try {
       const response = await AuthService.getAuthUser();
-      console.log(response.data.data.emailVerified);
       commit("SET_USER", response.data.data);
       commit("SET_VERIFY_USER", response.data.data.emailVerified);
       commit("SET_LOADING", false);
@@ -67,6 +66,17 @@ export const getters = {
   },
   isAdmin: (state) => {
     return state.user ? state.user.isAdmin : false;
+  },
+  avatar: (state) => {
+    let avatar = "";
+    if (state.user.avatar) {
+      avatar = state.user.avatar;
+      return avatar;
+    } else {
+      let name = state.user.name.split(" ", 2);
+      avatar = "https://ui-avatars.com/api/?name=" + name[0] + "+" + name[1];
+      return avatar;
+    }
   },
   verifyUser: (state) => {
     return state.verifyUser;

@@ -26,19 +26,19 @@
                 <!-- Avatar -->
                 <img
                   class="w-10 h-10 rounded-full mr-3 object-center object-cover"
-                  :src="auth.avatarSrc"
+                  :src="avatar"
                   alt=""
-                  v-if="auth.avatarSrc"
+                  v-if="avatar"
                 />
                 <span
                   v-else
-                  class="mr-3 block rounded-full bg-gray-200 w-8 h-8"
+                  class="mr-3 block rounded-full bg-gray-200 w-10 h-10"
                 ></span>
                 <!-- End Avatar -->
 
                 <!-- Full Name -->
-                <span v-if="auth.name" class="mt-1 text-gray-500">
-                  {{ auth.name }}
+                <span v-if="authUser.name" class="mt-2 text-gray-500">
+                  {{ authUser.name }}
                 </span>
 
                 <!-- Skleton loading -->
@@ -115,11 +115,10 @@
 </template>
 
 <script>
-import { reactive } from "vue";
-import { useStore } from "vuex";
 import { Menu, MenuItem, MenuItems, MenuButton } from "@headlessui/vue";
 import LogoutIcon from "../../../components/icons/LogoutIcon.vue";
 import MenuBarIcon from "../../../components/icons/MenuBarIcon";
+import { mapGetters } from "vuex";
 
 const userNavigation = [
   { name: "Your Profile", href: "/profile" },
@@ -134,35 +133,13 @@ export default {
     MenuBarIcon,
     LogoutIcon,
   },
+  computed: {
+    ...mapGetters("auth", ["authUser"]),
+    ...mapGetters("auth", ["avatar"]),
+  },
   emits: ["toggleSidebar", "toggleSlide", "logout"],
   setup() {
-    const store = useStore();
-    const auth = reactive({
-      name: null,
-      avatarSrc: null,
-      image: null,
-      skeleton: true,
-    });
-
-    async function getAuthData() {
-      const authUser = await store.dispatch("auth/getAuthUser");
-      if (authUser) {
-        auth.skeleton = false;
-      }
-      auth.name = authUser.name;
-      // auth.image = authUser.avatar;
-      if (authUser.avatar) {
-        auth.avatarSrc = authUser.avatar;
-      } else {
-        let name = auth.name.split(" ", 2);
-        auth.avatarSrc =
-          "https://ui-avatars.com/api/?name=" + name[0] + "+" + name[1];
-      }
-    }
-    getAuthData();
-
     return {
-      auth,
       userNavigation,
     };
   },
