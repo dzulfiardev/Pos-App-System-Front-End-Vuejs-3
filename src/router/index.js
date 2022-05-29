@@ -68,7 +68,9 @@ const routes = [
     path: "/dashboard",
     name: "dashboard",
     component: Dashboard,
-    meta: { middleware: [auth, verify] },
+    meta: {
+      middleware: [auth, verify],
+    },
   },
   {
     path: "/dashboard-v2",
@@ -148,6 +150,7 @@ router.beforeEach((to, from, next) => {
   const context = { to, from, next, store };
 
   if (!middleware) {
+    document.title = to.name;
     return next();
   }
 
