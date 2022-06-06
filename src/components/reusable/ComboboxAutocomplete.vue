@@ -1,10 +1,10 @@
 <template>
   <Combobox v-model="selected">
     <div class="relative">
-      <div class="">
+      <div>
         <ComboboxInput
-          class="input_style_1 text-base py-2"
-          :displayValue="(data) => data.name"
+          class="input_style_2 text-base py-2 mt-1"
+          :displayValue="(option) => option.text"
           @change="query = $event.target.value"
         />
         <ComboboxButton
@@ -34,41 +34,21 @@
             ring-1 ring-black ring-opacity-5
             focus:outline-none
             sm:text-sm
+            z-10
           "
         >
           <div
-            v-if="filterData.length === 0 && query !== ''"
+            v-if="filteredData.length === 0 && query !== ''"
             class="relative cursor-default select-none py-2 px-4 text-gray-700"
           >
             Nothing found.
           </div>
 
           <ComboboxOption
-            v-if="input.placeholder"
-            value=""
-            v-slot="{ selected, active }"
-          >
-            <li
-              class="relative cursor-default select-none py-2 pl-10 pr-4"
-              :class="{
-                'bg-teal-600 text-white': active,
-                'text-gray-900': !active,
-              }"
-            >
-              <span
-                class="block truncate"
-                :class="{ 'font-medium': selected, 'font-normal': !selected }"
-              >
-                {{ input.placeholder }}
-              </span>
-            </li>
-          </ComboboxOption>
-
-          <ComboboxOption
-            v-for="(option, index) in input.options"
+            v-for="option in filteredData"
             as="template"
-            :key="index"
-            :value="option.value"
+            :key="option.value"
+            :value="option"
             v-slot="{ selected, active }"
           >
             <li
@@ -99,8 +79,8 @@
   </Combobox>
 </template>
 
-<script>
-import { ref, computed } from "vue";
+<script setup>
+import { ref, computed, defineProps, watch } from "vue";
 import {
   Combobox,
   ComboboxInput,
@@ -111,40 +91,28 @@ import {
 } from "@headlessui/vue";
 import { CheckIcon, SelectorIcon } from "@heroicons/vue/solid";
 
-export default {
-  components: {
-    Combobox,
-    ComboboxInput,
-    ComboboxButton,
-    ComboboxOptions,
-    ComboboxOption,
-    TransitionRoot,
-    CheckIcon,
-    SelectorIcon,
-  },
-  props: {
-    input: Object,
-  },
-  setup(props) {
-    console.log(props.input.options);
-    let selected = ref(props.input.options[0].value);
-    let query = ref("");
-    console.log(props);
-    let filterData = computed(() =>
-      query.value === ""
-        ? props.input.options
-        : props.input.options.filter((person) =>
-            person.value
-              .toLowerCase()
-              .replace(/\s+/g, "")
-              .includes(query.value.toLowerCase().replace(/\s+/g, ""))
-          )
-    );
+const props = defineProps({
+  input: Object,
+});
+const selectedInput = props.input.options.find(
+  (data) => data.value === props.input.value
+);
+let selected = props.input.value
+  ? ref(selectedInput)
+  : ref(props.input.options[0]);
+let query = ref("");
+let filteredData = computed(() =>
+  query.value === ""
+    ? props.input.options
+    : props.input.options.filter((option) =>
+        option.text
+          .toLowerCase()
+          .replace(/\s+/g, "")
+          .includes(query.value.toLowerCase().replace(/\s+/g, ""))
+      )
+);
 
-    return {
-      selected,
-      filterData,
-    };
-  },
-};
+watch(query.value, () => {
+  console.log(query.value);
+});
 </script>

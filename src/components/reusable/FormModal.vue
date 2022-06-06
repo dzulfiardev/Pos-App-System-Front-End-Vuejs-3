@@ -51,7 +51,10 @@
               "
               :class="modal.widthClass"
             >
-              <form @submit.prevent="$emit('submitProduct')">
+              <form
+                @submit.prevent="$emit('submit')"
+                enctype="multipart/form-data"
+              >
                 <!-- Modal Header -->
                 <div class="bg-white pt-5 pb-5">
                   <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
@@ -70,38 +73,44 @@
                 <div class="py-3 px-4 sm:px-9">
                   <!-- Looping Element -->
                   <div
-                    class="flex flex-col sm:flex-row gap-5 my-2"
+                    class="
+                      flex flex-col
+                      sm:flex-row
+                      gap-0
+                      sm:gap-5
+                      mt-0
+                      sm:mt-3
+                    "
                     v-for="(row, i) in modal.inputs"
                     :key="i"
                   >
                     <div
-                      class="flex flex-col w-full"
+                      class="flex flex-col w-full mt-2 sm:mt-0"
                       v-for="(input, index) in row"
                       :key="index"
                     >
-                      <label class="font-medium">{{ input.label }}</label>
+                      <label class="font-medium" v-if="input.label">{{
+                        input.label
+                      }}</label>
 
                       <!-- Input Text -->
                       <input
                         type="text"
-                        class="input_style_1 text-base py-2"
+                        class="input_style_2 text-base py-2 mt-1"
                         :name="input.name"
                         :placeholder="input.placeholder"
-                        v-if="input.type == 'text'"
+                        v-if="input.type === 'text'"
                         v-model="input.value"
                       />
 
                       <!-- Input Select -->
                       <select
-                        name=""
+                        :name="input.name"
                         id=""
-                        class="input_style_1 text-base py-2"
-                        v-if="input.type == 'select'"
+                        class="input_style_2 text-base py-2 mt-1"
+                        v-if="input.type === 'select'"
                         v-model="input.value"
                       >
-                        <option value="" selected v-if="input.placeholder">
-                          {{ input.placeholder }}
-                        </option>
                         <option
                           v-for="(option, index2) in input.options"
                           :key="index2"
@@ -117,24 +126,31 @@
                         :options="input.options"
                         :settings="{
                           settingOption: input.value,
-                          settingOption: input.value,
                           width: '100%',
-                          selectionCssClass: 'input_style_1 text-base py-2',
+                          selectionCssClass:
+                            'input_style_2 text-base py-2 mt-1',
                         }"
                         @change="myChangeEvent($event)"
                         @select="mySelectEvent($event)"
                         style="width: 100% !important"
-                        v-if="input.type == 'autocomplete2'"
+                        v-if="input.type === 'select2-autocomplete'"
                       />
 
                       <AutoCompleteSelect
                         :input="input"
-                        v-if="input.type == 'autocomplete'"
+                        v-if="input.type === 'select-autocomplete'"
                       />
+
                       <!-- End Input Autocomplete -->
 
-                      <small class="text-red-500" v-if="row.errorMsg">{{
-                        row.errorMsg
+                      <InputFile
+                        :input="input"
+                        @method="$emit('imageFileInput')"
+                        v-if="input.type === 'file' && input.mime === 'image'"
+                      />
+
+                      <small class="text-red-500" v-if="input.errorMsg">{{
+                        input.errorMsg
                       }}</small>
                     </div>
                   </div>
@@ -167,7 +183,7 @@
                       text-base
                       font-medium
                       text-white
-                      hover:bg-greem-800
+                      hover:bg-green-800
                       focus:outline-none
                       focus:ring-2
                       focus:ring-offset-2
@@ -202,7 +218,7 @@
                       focus:ring-indigo-500
                       sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm
                     "
-                    @click="$emit('addModal')"
+                    @click="$emit('close')"
                     ref="cancelButtonRef"
                   >
                     {{ modal.btnCancelTitle }}
@@ -226,14 +242,15 @@ import {
   TransitionRoot,
 } from "@headlessui/vue";
 import Select2 from "vue3-select2-component";
-import AutoCompleteSelect from "../../../../components/reusable/ComboboxAutocomplete.vue";
+import AutoCompleteSelect from "@/components/reusable/ComboboxAutocomplete.vue";
+import InputFile from "@/components/reusable/InputFile.vue";
 
 export default {
   props: {
     open: Boolean,
     modal: Object,
   },
-  emits: ["addModal"],
+  emits: ["close", "submit", "imageFileInput"],
   components: {
     Dialog,
     DialogPanel,
@@ -242,6 +259,7 @@ export default {
     TransitionRoot,
     AutoCompleteSelect,
     Select2,
+    InputFile,
   },
   setup() {
     function myChangeEvent(val) {

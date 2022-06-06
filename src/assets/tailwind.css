@@ -21,6 +21,21 @@
     transition
     duration-300;
   }
+  .input_style_2 {
+    @apply bg-gray-50
+    border border-gray-300
+    text-gray-900 text-sm
+    rounded-lg
+    focus:outline-none
+    focus:ring-green-500
+    focus:border-green-500
+    focus:ring-1
+    block
+    w-full
+    p-2.5
+    transition
+    duration-300;
+  }
   .btn_dark {
     @apply py-2
     px-4

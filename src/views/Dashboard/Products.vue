@@ -17,8 +17,9 @@
       <AddModal
         :open="modal.add"
         :modal="modal"
-        @submitProduct="submitProduct"
-        @addModal="addModal"
+        @imageFileInput="imageFileInput"
+        @submit="submitProduct"
+        @close="addModal"
       />
 
       <div class="lg:flex">
@@ -45,17 +46,14 @@
 </template>
 
 <script>
+import { reactive, ref, defineComponent, onMounted } from "vue";
+import { useStore } from "vuex";
 import DashboardLayout from "./Layout/DashboardLayout.vue";
 import PlusIcon from "@/components/icons/PlusIcon.vue";
 import * as API from "@/services/API";
 import { AgGridVue } from "ag-grid-vue3";
-import { reactive, ref, defineComponent } from "vue";
 import ButtonAction from "./Partials/Products/ButtonAction.vue";
-import AddModal from "./Partials/Products/AddModal.vue";
-// import { ClientSideRowModelModule } from "@ag-grid-community/client-side-row-model";
-// import { ModuleRegistry } from "@ag-grid-community/core";
-// ModuleRegistry.registerModules([ClientSideRowModelModule]);
-// import BtnCellRenderer from "./Partials/Products/BtnAction.js";
+import AddModal from "@/components/reusable/FormModal.vue";
 
 export default defineComponent({
   components: {
@@ -66,6 +64,7 @@ export default defineComponent({
     AgGridVue,
   },
   setup() {
+    const store = useStore();
     const rowData = reactive({
       value: null,
     });
@@ -76,8 +75,9 @@ export default defineComponent({
       btnCancelTitle: "Cancel",
       widthClass: "sm:w-2/3 w-full",
       inputs: {
-        firstRow: [
+        row_1: [
           {
+            key: "product_code",
             type: "text",
             label: "Code",
             placeholder: "Code",
@@ -86,6 +86,7 @@ export default defineComponent({
             errorMsg: "",
           },
           {
+            key: "product_barcode",
             type: "text",
             label: "Barcode",
             placeholder: "Barcode",
@@ -94,78 +95,87 @@ export default defineComponent({
             errorMsg: "",
           },
         ],
-        secondRow: [
+        row_2: [
           {
+            key: "category_id",
             type: "select",
             label: "Category",
             name: "category",
             value: "",
             errorMsg: "",
-            placeholder: "Select Category...",
-            options: [
-              {
-                value: "Category 1",
-                text: "Category 1",
-              },
-              {
-                value: "Category 2",
-                text: "Category 2",
-              },
-              {
-                value: "Category 3",
-                text: "Category 3",
-              },
-            ],
+            options: [],
           },
           {
-            type: "autocomplete",
+            key: "brand_id",
+            type: "select",
             label: "Brand",
             name: "brand",
             value: "",
             errorMsg: "",
-            placeholder: "Select Brand...",
             options: [
               {
-                value: "Coca-Cola",
-                text: "Coca-Cola",
+                value: "",
+                text: "",
+              },
+            ],
+          },
+          {
+            key: "product_unit",
+            type: "select",
+            label: "Unit",
+            name: "unit",
+            value: "",
+            errorMsg: "",
+            options: [
+              {
+                value: "Pcs",
+                text: "Pcs",
               },
               {
-                value: "Fanta",
-                text: "Fanta",
+                value: "Kg",
+                text: "Kg",
               },
               {
-                value: "Sprite",
-                text: "Sprite",
+                value: "Gr",
+                text: "Gr",
+              },
+              {
+                value: "Box",
+                text: "Box",
               },
             ],
           },
         ],
-        thirdRow: [
+        row_3: [
           {
+            key: "product_name",
+            type: "text",
+            label: "Product Name",
+            placeholder: "Product Name",
+            name: "code",
+            value: "",
+            errorMsg: "",
+          },
+        ],
+        row_4: [
+          {
+            key: "supplier_id",
             type: "select",
             label: "Supplier",
             name: "brand",
             value: "",
             errorMsg: "",
-            placeholder: "Select Supplier...",
             options: [
               {
-                value: "Supplier 1",
-                text: "Supplier 1",
-              },
-              {
-                value: "Supplier 2",
-                text: "Supplier 2",
-              },
-              {
-                value: "Supplier 3",
-                text: "Supplier 3",
+                value: "",
+                text: "",
               },
             ],
           },
         ],
-        fourthRow: [
+        row_5: [
           {
+            key: "product_purchase_price",
             type: "text",
             label: "Purchase Price",
             placeholder: "$0.00",
@@ -174,11 +184,25 @@ export default defineComponent({
             errorMsg: "",
           },
           {
+            key: "product_selling_price",
             type: "text",
             label: "Selling Price",
             placeholder: "$0.00",
             name: "sellingPrice",
             value: "",
+            errorMsg: "",
+          },
+        ],
+        row_6: [
+          {
+            key: "product_image",
+            type: "file",
+            mime: "image",
+            label: "Upload Picture",
+            name: "upload_image",
+            placeholder: "Upload Picture",
+            value: "",
+            imgSrc: "",
             errorMsg: "",
           },
         ],
@@ -226,23 +250,35 @@ export default defineComponent({
         },
       ],
     });
-
     // Ag Grid Instance
 
     function addModal() {
       modal.add = !modal.add;
+      emptyForm();
     }
 
-    const onGridReady = (params) => {
-      console.log(params);
-      grid.gridApi = params.api;
-      grid.columnApi = params.columnApi;
-      const updateData = (data) => {
-        params.api.setRowData(data);
-      };
+    function emptyForm() {
+      for (const input in modal.inputs) {
+        for (const i in modal.inputs[input]) {
+          modal.inputs[input][i].value = "";
+          modal.inputs[input][i].errorMsg = "";
+        }
+      }
+    }
+
+    function imageFileInput() {
+      modal.inputs.row_6[0].value = store.state.products.file;
+    }
+
+    function reloadGridData() {
+      grid.gridApi.redraRows();
+    }
+
+    function resGridData(gridApi) {
+      let resData = {};
       API.apiClient.get("/products-by-company").then((res) => {
         const data = res.data.data;
-        const resData = data.map((data) => ({
+        resData = data.map((data) => ({
           id: data.id,
           code: data.code,
           barcode: data.barcode,
@@ -254,12 +290,154 @@ export default defineComponent({
           sellPrice: data.sellPrice,
           supplier: data.supplier,
         }));
-        updateData(resData);
+        gridApi.setRowData(resData);
       });
+    }
+
+    const onGridReady = (params) => {
+      grid.gridApi = params.api;
+      grid.columnApi = params.columnApi;
+      resGridData(grid.gridApi);
     };
 
+    function loadAllBrand() {
+      API.apiClient.get("/brand-by-company").then((res) => {
+        const data = res.data.data;
+        const brandData = data.map((res) => {
+          return {
+            value: res.id,
+            text: res.brand_name,
+          };
+        });
+
+        modal.inputs.row_2[1].options = [
+          ...modal.inputs.row_2[1].options,
+          ...brandData,
+        ];
+      });
+    }
+
+    async function loadAllCategory() {
+      try {
+        const res = await API.apiClient.get("category");
+        const data = res.data.data;
+        modal.inputs.row_2[0].options = data.map((res) => {
+          return {
+            value: res.id,
+            text: res.category_name,
+          };
+        });
+      } catch (err) {
+        console.log(err);
+      }
+    }
+
+    async function loadAllSupplier() {
+      try {
+        const res = await API.apiClient.get("supplier-by-company");
+        const data = res.data.data;
+        const supplierData = data.map((res) => {
+          return {
+            value: res.id,
+            text: `${res.supplier_name} - ${res.supplier_address}`,
+          };
+        });
+
+        modal.inputs.row_4[0].options = [
+          ...modal.inputs.row_4[0].options,
+          ...supplierData,
+        ];
+      } catch (err) {
+        console.log(err);
+      }
+    }
+
+    onMounted(() => {
+      loadAllBrand();
+      loadAllCategory();
+      loadAllSupplier();
+    });
+
     function submitProduct() {
-      addModal();
+      // const payload = {
+      //   product_code: modal.inputs.row_1[0].value,
+      //   product_barcode: modal.inputs.row_1[1].value,
+      //   category_id: modal.inputs.row_2[0].value,
+      //   brand_id: modal.inputs.row_2[1].value,
+      //   product_name: modal.inputs.row_3[0].value,
+      //   supplier_id: modal.inputs.row_4[0].value,
+      //   product_purchase_price: modal.inputs.row_5[0].value,
+      //   product_selling_price: modal.inputs.row_5[1].value,
+      //   product_image: modal.inputs.row_6[0].value
+      //     ? modal.inputs.row_5[0].value
+      //     : null,
+      // };
+
+      // let payload = {};
+      const formData = new FormData();
+
+      for (const row_j in modal.inputs) {
+        for (const j in modal.inputs[row_j]) {
+          let key = modal.inputs[row_j][j].key;
+          // payload[key] = modal.inputs[row_j][j].value;
+          formData.append(key, modal.inputs[row_j][j].value);
+        }
+      }
+
+      API.apiClient
+        .post("products", formData)
+        .then((res) => {
+          const data = res.data;
+          resGridData(grid.gridApi);
+          addModal();
+          console.log(data.success);
+        })
+        .catch((err) => {
+          if (err) {
+            const error = err.response.data.errors;
+
+            for (const row in modal.inputs) {
+              for (const i in modal.inputs[row]) {
+                let key = modal.inputs[row][i].key;
+                error[key]
+                  ? (modal.inputs[row][i].errorMsg = error[key][0])
+                  : (modal.inputs[row][i].errorMsg = "");
+              }
+            }
+          }
+        });
+
+      // formData.append("product_image", modal.inputs.row_6[0].value);
+      // payload["product_image"] = formData;
+
+      // try {
+      //   const res = await API.apiClient.post("products", formData);
+      //   const data = res.data;
+      //   console.log(data.success);
+      //   onGridReady();
+      //   addModal();
+      // } catch (err) {
+      //   if (err) {
+      //     console.log(err.response);
+      //   }
+
+      // if (err.response.data) {
+      //   const error = err.response.data.errors;
+
+      //   for (const row in modal.inputs) {
+      //     for (const i in modal.inputs[row]) {
+      //       let key = modal.inputs[row][i].key;
+      //       error[key]
+      //         ? (modal.inputs[row][i].errorMsg = error[key][0])
+      //         : (modal.inputs[row][i].errorMsg = "");
+      //     }
+      //   }
+      // }
+
+      // error.product_code
+      //   ? (modal.inputs.row_1[0].errorMsg = error.product_code[0])
+      //   : (modal.inputs.row_1[0].errorMsg = "");
+      // }
     }
 
     return {
@@ -271,6 +449,8 @@ export default defineComponent({
       modal,
       addModal,
       submitProduct,
+      imageFileInput,
+      reloadGridData,
       cellWasClicked: (event) => {
         // Example of consuming Grid Event
         console.log("cell was clicked", event);
