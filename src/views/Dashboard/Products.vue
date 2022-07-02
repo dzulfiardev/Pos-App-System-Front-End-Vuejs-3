@@ -270,12 +270,8 @@ export default defineComponent({
       modal.inputs.row_6[0].value = store.state.products.file;
     }
 
-    function reloadGridData() {
-      grid.gridApi.redraRows();
-    }
-
     function resGridData(gridApi) {
-      let resData = {};
+      let resData = [];
       API.apiClient.get("/products-by-company").then((res) => {
         const data = res.data.data;
         resData = data.map((data) => ({
@@ -294,11 +290,11 @@ export default defineComponent({
       });
     }
 
-    const onGridReady = (params) => {
+    function onGridReady(params) {
       grid.gridApi = params.api;
       grid.columnApi = params.columnApi;
       resGridData(grid.gridApi);
-    };
+    }
 
     function loadAllBrand() {
       API.apiClient.get("/brand-by-company").then((res) => {
@@ -373,13 +369,11 @@ export default defineComponent({
       //     : null,
       // };
 
-      // let payload = {};
       const formData = new FormData();
 
       for (const row_j in modal.inputs) {
         for (const j in modal.inputs[row_j]) {
           let key = modal.inputs[row_j][j].key;
-          // payload[key] = modal.inputs[row_j][j].value;
           formData.append(key, modal.inputs[row_j][j].value);
         }
       }
@@ -409,35 +403,6 @@ export default defineComponent({
 
       // formData.append("product_image", modal.inputs.row_6[0].value);
       // payload["product_image"] = formData;
-
-      // try {
-      //   const res = await API.apiClient.post("products", formData);
-      //   const data = res.data;
-      //   console.log(data.success);
-      //   onGridReady();
-      //   addModal();
-      // } catch (err) {
-      //   if (err) {
-      //     console.log(err.response);
-      //   }
-
-      // if (err.response.data) {
-      //   const error = err.response.data.errors;
-
-      //   for (const row in modal.inputs) {
-      //     for (const i in modal.inputs[row]) {
-      //       let key = modal.inputs[row][i].key;
-      //       error[key]
-      //         ? (modal.inputs[row][i].errorMsg = error[key][0])
-      //         : (modal.inputs[row][i].errorMsg = "");
-      //     }
-      //   }
-      // }
-
-      // error.product_code
-      //   ? (modal.inputs.row_1[0].errorMsg = error.product_code[0])
-      //   : (modal.inputs.row_1[0].errorMsg = "");
-      // }
     }
 
     return {
@@ -450,7 +415,6 @@ export default defineComponent({
       addModal,
       submitProduct,
       imageFileInput,
-      reloadGridData,
       cellWasClicked: (event) => {
         // Example of consuming Grid Event
         console.log("cell was clicked", event);
